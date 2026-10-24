@@ -1,6 +1,6 @@
 import pika
+import os
 import time
-import sys
 
 def callback(ch, method, properties, body):
     print("Received order:", body.decode(), flush=True)
@@ -10,7 +10,13 @@ def connect():
         try:
             print("Connecting to RabbitMQ...", flush=True)
             connection = pika.BlockingConnection(
-                pika.ConnectionParameters(host='rabbitmq')
+                pika.ConnectionParameters(
+                    host='rabbitmq',
+                    credentials=pika.PlainCredentials(
+                        os.environ['RABBITMQ_USER'],
+                        os.environ['RABBITMQ_PASSWORD']
+                    )
+                )
             )
             print("Connected to RabbitMQ", flush=True)
             return connection

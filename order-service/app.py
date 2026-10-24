@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import pika
 import json
+import os
 import time
 
 app = Flask(__name__)
@@ -9,11 +10,17 @@ def connect():
     while True:
         try:
             connection = pika.BlockingConnection(
-                pika.ConnectionParameters(host='rabbitmq')
+                pika.ConnectionParameters(
+                    host='rabbitmq',
+                    credentials=pika.PlainCredentials(
+                        os.environ['RABBITMQ_USER'],
+                        os.environ['RABBITMQ_PASSWORD']
+                    )
+                )
             )
             return connection
-        except:
-            print("Retrying RabbitMQ connection...")
+        except Exception as e:
+            print(f"RabbitMQ connection failed: {e!r}")
             time.sleep(5)
 
 @app.route('/order', methods=['POST'])
